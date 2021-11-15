@@ -1,0 +1,32 @@
+net = googlenet;
+
+%Get training images
+animals = imageDatastore("train_main","IncludeSubfolders",true,"LabelSource","foldernames");
+animals_test = imageDatastore("test_main","IncludeSubfolders",true,"LabelSource","foldernames");
+animas = augmentedImageDatastore([224 224 3],animals);
+animas_test = augmentedImageDatastore([224 224 3],animals_test);
+
+%Modifying Network Layers
+a = net.Layers;
+lg = layerGraph(net);
+fc = fullyConnectedLayer(6,"Name","new_fc");
+lg = replaceLayer(lg,"loss3-classifier",fc);
+cl = classificationLayer("Name","new_out");
+lg = replaceLayer(lg,"output",cl);
+
+%Setting Training Options
+opts = trainingOptions("sgdm","InitialLearnRate",0.001,"ExecutionEnvironment","parallel",'MiniBatchSize',16);
+
+%Training the network
+[animalnet,info] = trainNetwork(animas, lg, opts);
+
+%Evaluating Performance
+prediction = classify(animalnet,animas_test);
+plot(info.TrainingLoss)
+hold on
+plot(info.TrainingAccuracy)
+hold off
+actual = animals_test.Labels;
+Correct = nnz(prediction == actual);
+fracCorrect = Correct/numel(prediction);
+confusionchart(animals_test.Labels,prediction)
