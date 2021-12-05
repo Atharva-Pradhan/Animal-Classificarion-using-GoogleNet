@@ -1,4 +1,4 @@
-# Animal-Classificarion-using-GoogleNet
+# Animal-Classification-using-GoogleNet
 Steps to use the code
 Keep the training data, testing data and the Matlab code at the same location.
 
